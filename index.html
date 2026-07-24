@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartDocs - Enterprise Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    body.login-body {
+      background: linear-gradient(135deg, #14532D 0%, #16A34A 50%, #DCFCE7 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 440px;
+      padding: 2.5rem;
+      border-radius: 24px;
+    }
+  </style>
+</head>
+<body class="login-body">
+
+  <div class="custom-card glass-panel login-card text-center">
+    <div class="mb-4">
+      <div class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle mb-3" style="width: 60px; height: 60px;">
+        <i class="bi bi-file-earmark-text-fill fs-2"></i>
+      </div>
+      <h3 class="fw-bold mb-1">SmartDocs</h3>
+      <p class="text-muted small">Enterprise Document Management System</p>
+    </div>
+
+    <form id="loginForm">
+      <div class="form-floating mb-3 text-start">
+        <input type="email" class="form-control rounded-3" id="floatingInput" placeholder="name@company.com" value="admin@smartdocs.com" required>
+        <label for="floatingInput">Enterprise Email</label>
+      </div>
+      <div class="form-floating mb-3 text-start">
+        <input type="password" class="form-control rounded-3" id="floatingPassword" placeholder="Password" value="••••••••" required>
+        <label for="floatingPassword">Password</label>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-4 small">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="rememberMe" checked>
+          <label class="form-check-label" for="rememberMe">Remember me</label>
+        </div>
+        <a href="#" class="text-decoration-none text-success fw-medium">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="btn btn-primary-green w-100 py-2.5 mb-3 fw-semibold">Sign In to Dashboard</button>
+      
+      <div class="position-relative my-4">
+        <hr class="text-muted">
+        <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">OR</span>
+      </div>
+
+      <button type="button" onclick="window.location.href='dashboard.html'" class="btn btn-outline-secondary w-100 py-2 d-flex align-items-center justify-content-center gap-2 rounded-3">
+        <i class="bi bi-microsoft text-primary"></i> Continue with Microsoft 365
+      </button>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/login.js"></script>
+</body>
+</html>
