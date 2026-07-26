@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SmartDocs - Design System & Stylesheet
+   SmartDocs - Design System & Responsive Stylesheet
    ========================================================================== */
 
 :root {
@@ -52,8 +52,8 @@ body {
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
@@ -171,8 +171,8 @@ body {
 }
 
 .bg-light-green {
-  background-color: var(--light-green);
-  color: var(--dark-green-sidebar);
+  background-color: var(--light-green) !important;
+  color: var(--dark-green-sidebar) !important;
 }
 
 .btn-primary-green {
@@ -188,6 +188,16 @@ body {
 .btn-primary-green:hover {
   background-color: #15803D;
   color: #ffffff;
+}
+
+/* Document & Table Styles */
+.doc-card {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.doc-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1) !important;
 }
 
 .table-custom {
@@ -221,6 +231,15 @@ body {
   background-color: #BBF7D0;
 }
 
+/* Webcam & Camera Live Component */
+.webcam-video {
+  width: 100%;
+  max-height: 380px;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+  background: #000;
+}
+
 .ocr-loader-overlay {
   position: fixed;
   top: 0;
@@ -234,4 +253,74 @@ body {
   align-items: center;
   z-index: 9999;
   color: white;
+}
+
+/* ==========================================================================
+   Responsive Breakpoints & Mobile Optimization
+   ========================================================================== */
+
+/* Tablet & Mobile Layout (< 992px) */
+@media (max-width: 991.98px) {
+  .app-wrapper {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+
+  .sidebar .brand {
+    padding: 1rem;
+  }
+
+  .sidebar-menu {
+    display: flex;
+    overflow-x: auto;
+    padding: 0.5rem;
+    white-space: nowrap;
+  }
+
+  .sidebar-menu .nav-item {
+    margin-bottom: 0;
+    margin-right: 0.5rem;
+  }
+
+  .sidebar-menu .nav-link {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .main-content {
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .top-navbar {
+    padding: 0.75rem 1rem;
+    height: auto;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .search-input-group {
+    width: 100%;
+    order: 3;
+  }
+}
+
+/* Mobile Small (< 576px) */
+@media (max-width: 575.98px) {
+  .p-4 {
+    padding: 1rem !important;
+  }
+
+  .top-navbar {
+    padding: 0.75rem;
+  }
+
+  .dropzone-area {
+    padding: 1.5rem;
+  }
 }
