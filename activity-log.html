@@ -38,22 +38,7 @@
       <div class="p-4">
         <div class="custom-card p-4">
           <h5 class="fw-bold mb-3">Audit Trails & User Activities</h5>
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-              <div>
-                <strong class="d-block">Document Scanned (Direct OCR)</strong>
-                <small class="text-muted">Alex Dawson scanned Invoice_KABONBTG_002.pdf</small>
-              </div>
-              <span class="badge bg-light text-dark">Just now</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-              <div>
-                <strong class="d-block">User Login</strong>
-                <small class="text-muted">Alex Dawson logged into the system</small>
-              </div>
-              <span class="badge bg-light text-dark">10 mins ago</span>
-            </li>
-          </ul>
+          <ul class="list-group list-group-flush" id="activityList"></ul>
         </div>
       </div>
     </main>
@@ -63,5 +48,22 @@
   <script src="assets/js/store.js"></script>
   <script src="assets/js/app.js"></script>
   <script src="assets/js/layout.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const logs = await Store.syncActivity();
+      const list = document.getElementById('activityList');
+      if (!list) return;
+
+      list.innerHTML = logs.map((log) => `
+        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+          <div>
+            <strong class="d-block">${log.activity}</strong>
+            <small class="text-muted">${log.document}</small>
+          </div>
+          <span class="badge bg-light text-dark">${log.date}</span>
+        </li>
+      `).join('');
+    });
+  </script>
 </body>
 </html>

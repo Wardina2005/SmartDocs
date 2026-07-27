@@ -1,9 +1,11 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   if (!document.getElementById('monthlyExpenseChart')) return;
 
-  const stats = Store.getStats();
-  if (document.getElementById('kpiTotal')) document.getElementById('kpiTotal').innerText = stats.totalDocs;
-  if (document.getElementById('kpiToday')) document.getElementById('kpiToday').innerText = stats.todayDocs;
+  await Store.syncDocuments();
+  const stats = await Store.syncDashboard();
+
+  if (document.getElementById('kpiTotal')) document.getElementById('kpiTotal').innerText = stats.totalDocs || 0;
+  if (document.getElementById('kpiToday')) document.getElementById('kpiToday').innerText = stats.todayDocs || 0;
 
   const docs = Store.getDocuments();
   const tbody = document.getElementById('recentDocsTableBody');
@@ -28,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
       labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
       datasets: [{
         label: 'Expense ($)',
-        data: [12000, 19000, 15000, 22000, 30000, 48500],
+        data: [12000, 19000, 15000, 22000, 30000, stats.monthlyExpense || 48500],
         borderColor: '#16A34A',
         backgroundColor: 'rgba(22, 163, 74, 0.1)',
         fill: true,

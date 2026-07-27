@@ -93,8 +93,9 @@
   <script src="assets/js/layout.js"></script>
   <script>
     let previewModal;
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       previewModal = new bootstrap.Modal(document.getElementById('docPreviewModal'));
+      await Store.syncDocuments();
       renderDocuments();
     });
 

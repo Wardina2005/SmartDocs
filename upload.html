@@ -1,22 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartDocs - OCR Scanner & Direct Extraction</title>
+  <title>SmartDocs - Direct Scan & OCR</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
-  <style>
-    .webcam-video {
-      width: 100%;
-      max-height: 380px;
-      object-fit: cover;
-      border-radius: 12px;
-      background: #000;
-    }
-  </style>
 </head>
 <body>
 
@@ -47,60 +38,55 @@
       <div class="p-4">
         <div class="row g-4">
           <div class="col-lg-5">
-            <div class="custom-card p-4">
+            <div class="custom-card p-3">
               <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="fw-bold mb-0"><i class="bi bi-camera me-2"></i>Document Capture</h6>
-                <button class="btn btn-sm btn-outline-success" onclick="toggleSource()">Switch to <span id="sourceToggleLabel">File Upload</span></button>
+                <h6 class="fw-bold mb-0"><i class="bi bi-camera me-1"></i> Document Capture</h6>
+                <button class="btn btn-sm btn-outline-secondary" id="btnToggleSource" onclick="toggleInputSource()">Switch to Upload File</button>
               </div>
 
-              <div id="cameraContainer">
-                <video id="webcam" class="webcam-video mb-3" autoplay playsinline></video>
-                <button class="btn btn-primary-green w-100 py-2 fw-semibold" onclick="captureAndScan()"><i class="bi bi-camera-fill me-1"></i> Capture & Scan OCR</button>
+              <div id="webcamContainer" class="position-relative mb-3">
+                <video id="webcamVideo" class="webcam-video" autoplay playsinline></video>
+                <canvas id="captureCanvas" class="d-none"></canvas>
               </div>
 
-              <div id="uploadContainer" class="d-none">
-                <div class="dropzone-area mb-3" onclick="document.getElementById('fileInput').click()">
-                  <i class="bi bi-cloud-arrow-up display-4 text-success mb-2"></i>
-                  <h6>Upload Invoice Image</h6>
-                  <small class="text-muted">JPG, PNG, PDF</small>
-                  <input type="file" id="fileInput" class="d-none" accept="image/*" onchange="previewUpload(event)">
-                </div>
-                <button id="btnUploadScan" class="btn btn-primary-green w-100 py-2 fw-semibold" disabled onclick="simulateOCR()"><i class="bi bi-cpu me-1"></i> Scan Uploaded File</button>
+              <div id="uploadContainer" class="dropzone-area d-none mb-3" onclick="document.getElementById('fileInput').click()">
+                <i class="bi bi-cloud-arrow-up display-4 text-success"></i>
+                <p class="mb-0 fw-semibold">Klik atau Drag & Drop Gambar Invoice</p>
+                <input type="file" id="fileInput" class="d-none" accept="image/*" onchange="handleFileUpload(event)">
               </div>
+
+              <button class="btn btn-primary-green w-100 py-2 fw-semibold" id="btnScan" onclick="processOCRFromSource()">
+                <i class="bi bi-camera-fill me-1"></i> Capture & Scan OCR
+              </button>
             </div>
           </div>
 
           <div class="col-lg-7">
             <div class="custom-card p-4">
               <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                <h6 class="fw-bold mb-0"><i class="bi bi-card-checklist me-2"></i>Extracted OCR Results</h6>
-                <button onclick="saveExtractedData()" id="btnSave" class="btn btn-sm btn-success d-none"><i class="bi bi-check-circle me-1"></i> Save to Repository</button>
+                <h6 class="fw-bold mb-0"><i class="bi bi-table me-1"></i> Extracted OCR Results</h6>
+                <button class="btn btn-success btn-sm d-none" id="btnSaveToBackend" onclick="saveToBackendDatabase()">
+                  <i class="bi bi-cloud-upload me-1"></i> Save to Database
+                </button>
               </div>
 
               <div id="ocrPlaceholder" class="text-center py-5 text-muted">
-                <i class="bi bi-scan-stack display-1 text-secondary opacity-50 mb-3"></i>
-                <p>Silakan **Ambil Foto / Upload Dokumen** di sebelah kiri untuk melihat hasil ekstraksi tabel otomatis.</p>
+                <i class="bi bi-receipt display-1 opacity-25"></i>
+                <p class="mt-2 mb-0">Silakan **Ambil Foto / Upload Dokumen** di sebelah kiri untuk melihat hasil ekstraksi tabel otomatis.</p>
               </div>
 
               <div id="ocrResultView" class="d-none">
-                <div class="row g-2 mb-3 bg-light p-3 rounded-3">
-                  <div class="col-6 col-md-4">
-                    <small class="text-muted d-block">Vendor / Perusahaan</small>
-                    <strong id="metaVendor" class="small">KABONBTG DIGITAL PRINTING</strong>
-                  </div>
-                  <div class="col-6 col-md-4">
-                    <small class="text-muted d-block">No. Invoice</small>
-                    <strong id="metaInvNo" class="small">19 /10/KB-002</strong>
-                  </div>
-                  <div class="col-6 col-md-4">
-                    <small class="text-muted d-block">Tgl Faktur</small>
-                    <strong id="metaDate" class="small">09 Februari 2023</strong>
+                <div class="bg-light p-3 rounded-3 mb-3">
+                  <div class="row g-2 small">
+                    <div class="col-6"><strong>Vendor:</strong> <span id="metaVendor">-</span></div>
+                    <div class="col-6"><strong>No. Invoice:</strong> <span id="metaInvNo">-</span></div>
+                    <div class="col-6"><strong>Tanggal:</strong> <span id="metaDate">-</span></div>
                   </div>
                 </div>
 
-                <div class="table-responsive mb-3">
-                  <table class="table table-bordered table-sm align-middle" style="font-size: 0.85rem;">
-                    <thead class="table-light">
+                <div class="table-responsive">
+                  <table class="table table-custom table-hover">
+                    <thead>
                       <tr>
                         <th>No</th>
                         <th>Deskripsi Barang</th>
@@ -109,23 +95,13 @@
                         <th class="text-end">Jumlah</th>
                       </tr>
                     </thead>
-                    <tbody id="invoiceItemsTable">
-                      </tbody>
-                    <tfoot class="table-group-divider fw-bold">
-                      <tr>
-                        <td colspan="4" class="text-end">Total:</td>
-                        <td class="text-end text-success" id="invTotal">Rp. 38,771,000</td>
-                      </tr>
-                      <tr>
-                        <td colspan="4" class="text-end text-muted">DP Pembayaran:</td>
-                        <td class="text-end text-muted" id="invDP">Rp. 19,000,000</td>
-                      </tr>
-                      <tr>
-                        <td colspan="4" class="text-end text-danger">Sisa Pembayaran:</td>
-                        <td class="text-end text-danger" id="invSisa">Rp. 19,771,000</td>
-                      </tr>
-                    </tfoot>
+                    <tbody id="invoiceItemsTable"></tbody>
                   </table>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-2">
+                  <span class="fw-bold text-muted">Total Pembayaran</span>
+                  <h4 class="fw-bold text-success mb-0" id="invTotal">Rp. 0</h4>
                 </div>
               </div>
 
@@ -141,92 +117,167 @@
   <script src="assets/js/app.js"></script>
   <script src="assets/js/layout.js"></script>
   <script>
-    let currentSource = 'camera'; // 'camera' or 'upload'
+    const BACKEND_API_URL = "http://localhost:8000/api";
 
-    // Init Camera Feed
+    let isCameraMode = true;
+    let currentStream = null;
+    let extractedDataCache = null;
+
     document.addEventListener('DOMContentLoaded', () => {
       startCamera();
     });
 
-    function startCamera() {
-      const video = document.getElementById('webcam');
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-          .then(stream => { video.srcObject = stream; })
-          .catch(err => { console.warn("Kamera tidak tersedia:", err); });
+    async function startCamera() {
+      try {
+        currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        document.getElementById('webcamVideo').srcObject = currentStream;
+      } catch (err) {
+        console.warn("Kamera tidak dapat diakses:", err);
       }
     }
 
-    function toggleSource() {
-      if (currentSource === 'camera') {
-        currentSource = 'upload';
-        document.getElementById('cameraContainer').classList.add('d-none');
-        document.getElementById('uploadContainer').classList.remove('d-none');
-        document.getElementById('sourceToggleLabel').innerText = 'Live Camera';
+    function toggleInputSource() {
+      isCameraMode = !isCameraMode;
+      const webcamContainer = document.getElementById('webcamContainer');
+      const uploadContainer = document.getElementById('uploadContainer');
+      const btnToggle = document.getElementById('btnToggleSource');
+
+      if (isCameraMode) {
+        webcamContainer.classList.remove('d-none');
+        uploadContainer.classList.add('d-none');
+        btnToggle.innerText = "Switch to Upload File";
+        startCamera();
       } else {
-        currentSource = 'camera';
-        document.getElementById('uploadContainer').classList.add('d-none');
-        document.getElementById('cameraContainer').classList.remove('d-none');
-        document.getElementById('sourceToggleLabel').innerText = 'File Upload';
+        webcamContainer.classList.add('d-none');
+        uploadContainer.classList.remove('d-none');
+        btnToggle.innerText = "Switch to Camera";
+        if (currentStream) {
+          currentStream.getTracks().forEach(track => track.stop());
+        }
       }
     }
 
-    function previewUpload(e) {
-      if (e.target.files.length > 0) {
-        document.getElementById('btnUploadScan').removeAttribute('disabled');
+    function normalizeOCRPayload(data) {
+      return {
+        vendor: data.vendor || '',
+        invoice_number: data.invoice_number || data.invoiceNo || '',
+        invoice_date: data.invoice_date || data.date || '',
+        activity_name: data.activity_name || '',
+        division: data.division || '',
+        category: data.category || '',
+        payment_method: data.payment_method || '',
+        description: data.description || '',
+        grand_total: data.grand_total || data.grandTotal || 0,
+        items: (data.items || []).map((item) => ({
+          item: item.item || item.name || '',
+          qty: item.qty || item.quantity || 0,
+          price: item.price || 0,
+          total: item.total || 0
+        }))
+      };
+    }
+
+    async function processOCRFromSource() {
+      let imageBlob = null;
+
+      if (isCameraMode) {
+        const video = document.getElementById('webcamVideo');
+        const canvas = document.getElementById('captureCanvas');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        imageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+      } else {
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput.files.length === 0) {
+          alert("Pilih file terlebih dahulu!");
+          return;
+        }
+        imageBlob = fileInput.files[0];
+      }
+
+      sendToOCRBackend(imageBlob);
+    }
+
+    async function sendToOCRBackend(blob) {
+      App.showNotification("Memproses OCR dari Backend Server...");
+
+      const formData = new FormData();
+      formData.append("file", blob, "invoice_capture.jpg");
+
+      try {
+        const response = await fetch(`${BACKEND_API_URL}/scan`, {
+          method: "POST",
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          extractedDataCache = normalizeOCRPayload(result.data);
+          renderOCRResultTable(extractedDataCache);
+          sessionStorage.setItem('pending_ocr_payload', JSON.stringify(extractedDataCache));
+          sessionStorage.setItem('pending_ocr_filename', blob.name || 'document.pdf');
+          App.showNotification("Ekstraksi Berhasil!");
+        } else {
+          throw new Error(result.detail || "Gagal memproses OCR.");
+        }
+      } catch (error) {
+        console.error("Backend Error:", error);
+        alert(error.message || "Gagal terhubung ke Backend API Server (http://localhost:8000).");
       }
     }
 
-    function captureAndScan() {
-      simulateOCR();
-    }
-
-    // Simulasi Proses OCR langsung mengisi Tabel
-    function simulateOCR() {
-      // Mock data item sesuai faktur fisik di gambar
-      const sampleItems = [
-        { no: 1, name: "Kaos POLO + BORDIR UKURAN NORMAL", qty: 270, price: "Rp. 112.000", total: "Rp. 30,240,000" },
-        { no: 2, name: "Kaos POLO + BORDIR UKURAN 2XL", qty: 38, price: "Rp. 119.000", total: "Rp. 4,522,000" },
-        { no: 3, name: "Kaos POLO + BORDIR UKURAN 3XL", qty: 9, price: "Rp. 125.000", total: "Rp. 1,125,000" },
-        { no: 4, name: "Kaos POLO + BORDIR PANJANG NORMAL", qty: 17, price: "Rp. 122.000", total: "Rp. 2,074,000" },
-        { no: 5, name: "Kaos POLO + BORDIR PANJANG 2XL - 3XL", qty: 6, price: "Rp. 135.000", total: "Rp. 810,000" }
-      ];
-
-      // Tampilkan View Tabel
+    function renderOCRResultTable(data) {
       document.getElementById('ocrPlaceholder').classList.add('d-none');
       document.getElementById('ocrResultView').classList.remove('d-none');
-      document.getElementById('btnSave').classList.remove('d-none');
+      document.getElementById('btnSaveToBackend').classList.remove('d-none');
 
-      // Render Item Tabel
+      document.getElementById('metaVendor').innerText = data.vendor || "-";
+      document.getElementById('metaInvNo').innerText = data.invoice_number || "-";
+      document.getElementById('metaDate').innerText = data.invoice_date || "-";
+
       const tbody = document.getElementById('invoiceItemsTable');
-      tbody.innerHTML = sampleItems.map(item => `
+      tbody.innerHTML = (data.items || []).map((item, index) => `
         <tr>
-          <td>${item.no}</td>
-          <td><strong>${item.name}</strong></td>
+          <td>${index + 1}</td>
+          <td><strong>${item.item}</strong></td>
           <td class="text-center">${item.qty}</td>
-          <td class="text-end">${item.price}</td>
-          <td class="text-end fw-semibold">${item.total}</td>
+          <td class="text-end">Rp. ${(item.price || 0).toLocaleString('id-ID')}</td>
+          <td class="text-end fw-semibold">Rp. ${(item.total || 0).toLocaleString('id-ID')}</td>
         </tr>
       `).join('');
 
-      App.showNotification("OCR Selesai! Data Tabel berhasil diekstraksi.");
+      document.getElementById('invTotal').innerText = "Rp. " + (data.grand_total || 0).toLocaleString('id-ID');
     }
 
-    function saveExtractedData() {
-      const doc = {
-        id: 'DOC-' + Math.floor(1000 + Math.random() * 9000),
-        name: 'Invoice_KABONBTG_002.pdf',
-        category: 'Invoice',
-        division: 'Finance',
-        vendor: 'KABONBTG DIGITAL PRINTING',
-        amount: 'Rp. 38,771,000',
-        date: '2023-02-09',
-        status: 'Approved'
-      };
+    async function saveToBackendDatabase() {
+      if (!extractedDataCache) return;
 
-      Store.addDocument(doc);
-      App.showNotification("Dokumen & Detail Tabel Berhasil Disimpan!");
-      setTimeout(() => { window.location.href = 'documents.html'; }, 1000);
+      try {
+        const response = await fetch(`${BACKEND_API_URL}/save`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(extractedDataCache)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          App.showNotification("Data Invoice Berhasil Disimpan ke Database!");
+          await Store.syncDocuments();
+          setTimeout(() => {
+            window.location.href = "documents.html";
+          }, 1200);
+        } else {
+          throw new Error(result.detail || "Gagal menyimpan data ke backend database.");
+        }
+      } catch (error) {
+        console.error("Error saving to database:", error);
+        alert(error.message || "Gagal menyimpan data ke backend database.");
+      }
     }
   </script>
 </body>

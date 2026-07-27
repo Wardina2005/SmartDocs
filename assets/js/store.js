@@ -1,4 +1,6 @@
 const Store = (() => {
+  const BACKEND_API_URL = window.BACKEND_API_URL || 'http://localhost:8000/api';
+
   const DEFAULT_DOCUMENTS = [
     { id: 'DOC-1001', name: 'Vendor_Invoice_ACME.pdf', category: 'Invoice', division: 'Finance', vendor: 'ACME Corp', date: '2026-03-28', status: 'Approved', amount: '$4,250.00' },
     { id: 'DOC-1002', name: 'Q1_Tax_Report.pdf', category: 'Tax', division: 'Accounting', vendor: 'Internal', date: '2026-03-27', status: 'Verified', amount: '$12,800.00' },
@@ -59,7 +61,79 @@ const Store = (() => {
     localStorage.setItem('smartdocs_logs', JSON.stringify(logs));
   };
 
+  const syncDocuments = async () => {
+    try {
+      const response = await fetch(`${BACKEND_API_URL}/documents`);
+      if (!response.ok) throw new Error('Unable to load documents');
+      const result = await response.json();
+      const docs = Array.isArray(result.documents) ? result.documents : [];
+      if (docs.length) {
+        localStorage.setItem('smartdocs_documents', JSON.stringify(docs));
+      }
+      return docs;
+    } catch (error) {
+      console.warn('Backend documents unavailable, using local cache:', error);
+      return getDocuments();
+    }
+  };
+
+  const syncDashboard = async () => {
+    try {
+      const response = await fetch(`${BACKEND_API_URL}/dashboard`);
+      if (!response.ok) throw new Error('Unable to load dashboard');
+      const result = await response.json();
+      const payload = result.data || {};
+      const stats = {
+        totalDocs: payload.total_documents || getDocuments().length,
+        todayDocs: Math.max(1, (payload.recent_documents || []).length),
+        monthlyExpense: payload.total_expenses || 0,
+        ocrAccuracy: '98.4%',
+        storageUsed: 'Local + MySQL'
+      };
+      localStorage.setItem('smartdocs_stats', JSON.stringify(stats));
+      return stats;
+    } catch (error) {
+      console.warn('Dashboard sync failed:', error);
+      return getStats();
+    }
+  };
+
+  const syncActivity = async () => {
+    try {
+      const response = await fetch(`${BACKEND_API_URL}/activity`);
+      if (!response.ok) throw new Error('Unable to load activity logs');
+      const result = await response.json();
+      const logs = Array.isArray(result.data) ? result.data : [];
+      const normalized = logs.map((log) => ({
+        date: log.timestamp ? log.timestamp.split(' ')[0] : new Date().toISOString().split('T')[0],
+        time: log.timestamp ? log.timestamp.split(' ')[1] || '00:00' : '00:00',
+        user: 'Admin User',
+        activity: log.action || 'Activity',
+        document: log.document_id ? `Document #${log.document_id}` : 'System',
+        division: 'General',
+        status: 'Success'
+      }));
+      localStorage.setItem('smartdocs_logs', JSON.stringify(normalized));
+      return normalized;
+    } catch (error) {
+      console.warn('Activity sync failed:', error);
+      return getLogs();
+    }
+  };
+
+  const syncReports = async () => {
+    try {
+      const response = await fetch(`${BACKEND_API_URL}/reports`);
+      if (!response.ok) throw new Error('Unable to load reports');
+      const result = await response.json();
+      return result.data || {};
+    } catch (error) {
+      console.warn('Reports sync failed:', error);
+      return {};
+    }
+  };
+
   init();
 
-  return { getDocuments, getLogs, getStats, addDocument, addLog };
+  return { getDocuments, getLogs, getStats, addDocument, addLog, syncDocuments, syncDashboard, syncActivity, syncReports };
 })();
