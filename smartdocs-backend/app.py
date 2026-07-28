@@ -45,6 +45,10 @@ app.add_middleware(
 
 app.include_router(router, prefix="/api")
 
+print("\n===== REGISTERED ROUTES =====")
+for route in app.routes:
+    print(route.path)
+print("=============================\n")
 
 @app.get("/health")
 def health_check() -> dict[str, object]:

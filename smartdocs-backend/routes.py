@@ -1,6 +1,8 @@
 """API routes for OCR processing, persistence, and reporting."""
 from __future__ import annotations
 
+print("========== ROUTES LOADED ==========")
+
 from pathlib import Path
 from typing import Any, Dict
 

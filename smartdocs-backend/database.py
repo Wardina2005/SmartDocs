@@ -272,6 +272,8 @@ def get_document_with_items(document_id: int) -> dict[str, Any]:
     """Return detailed document metadata and its related item rows from the database."""
     try:
         connection = get_connection()
+        print("==============================")
+        print("DOCUMENT ID :", document_id)
         cursor = None
         try:
             cursor = connection.cursor(dictionary=True)
@@ -287,8 +289,11 @@ def get_document_with_items(document_id: int) -> dict[str, Any]:
                 (document_id,),
             )
             document = cursor.fetchone()
+            print("DOCUMENT =")
+            print(document)
             if not document:
                 return {}
+            
 
             # Ambil item terkait dari tabel document_items secara terpisah agar aman dari duplikasi LEFT JOIN
             cursor.execute(
@@ -301,6 +306,8 @@ def get_document_with_items(document_id: int) -> dict[str, Any]:
                 (document_id,),
             )
             item_rows = cursor.fetchall() or []
+            print("ITEMS =")
+            print(item_rows)
 
             items = [
                 {

@@ -568,7 +568,7 @@
     async function saveToBackendDatabase() {
       if (!extractedDataCache) return;
 
-      recalculateTableSummary(); // Pastikan data terbaru terambil
+      recalculateTableSummary(); 
 
       const items = extractedDataCache.items
         .map((item) => ({
@@ -590,6 +590,11 @@
         items,
         grand_total: items.reduce((sum, item) => sum + Number(item.total || 0), 0),
       };
+
+      console.log("=== PAYLOAD ===");
+      console.log(payload);
+      console.log(JSON.stringify(payload, null, 2));
+
 
       if (items.length === 0) {
         alert('Silakan tambahkan setidaknya satu baris item sebelum menyimpan.');
