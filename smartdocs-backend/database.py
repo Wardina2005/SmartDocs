@@ -6,7 +6,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+# pyrefly: ignore [missing-import]
 import mysql.connector
+# pyrefly: ignore [missing-import]
 from mysql.connector import Error
 
 DB_CONFIG: dict[str, Any] = {

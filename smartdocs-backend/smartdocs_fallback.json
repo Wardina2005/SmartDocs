@@ -1,0 +1,45 @@
+{
+  "documents": [
+    {
+      "id": 1785161110331,
+      "vendor_name": "TANGGAL: KEPADA: MAJU BERSAMA DIGITAL",
+      "activity_name": "",
+      "invoice_number": "123-456-7890",
+      "invoice_date": "01/01/2000",
+      "division": "",
+      "category": "",
+      "payment_method": "Cash / Transfer",
+      "description": "",
+      "grand_total": 12800000.0,
+      "created_at": "2026-07-27 21:05:10",
+      "items": [
+        {
+          "item": "Paket Desain Logo .00O .0OO",
+          "qty": 1.0,
+          "price": 6000000.0,
+          "total": 6000000.0
+        },
+        {
+          "item": "Desain Company Profile (12 halaman) .00O0",
+          "qty": 1.0,
+          "price": 5000000.0,
+          "total": 5000000.0
+        },
+        {
+          "item": "Revisi Mayor",
+          "qty": 3.0,
+          "price": 600000.0,
+          "total": 1800000.0
+        }
+      ]
+    }
+  ],
+  "activity_logs": [
+    {
+      "id": 1,
+      "user_action": "Saved OCR document 123-456-7890",
+      "document_id": 1785161110331,
+      "timestamp": "2026-07-27 21:05:10"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,62 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .dropzone-area {
+      border: 2px dashed #198754;
+      border-radius: 12px;
+      background-color: #f8f9fa;
+      padding: 25px 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .dropzone-area:hover,
+    .dropzone-area.dragover {
+      background-color: #e8f5e9;
+      border-color: #146c43;
+    }
+
+    .img-preview-container {
+      position: relative;
+      max-height: 260px;
+      overflow: hidden;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+      background: #000;
+    }
+
+    .img-preview-container img {
+      width: 100%;
+      height: 250px;
+      object-fit: contain;
+    }
+
+    .preview-action-overlay {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 6px;
+      z-index: 10;
+    }
+
+    .webcam-video {
+      width: 100%;
+      border-radius: 12px;
+      background-color: #000;
+      max-height: 280px;
+      object-fit: cover;
+    }
+
+    .table input.form-control {
+      padding: 4px 8px;
+      font-size: 0.9rem;
+    }
+  </style>
 </head>
+
 <body>
 
   <div class="app-wrapper">
@@ -18,15 +74,21 @@
         <h1 class="brand-title">SmartDocs</h1>
       </div>
       <ul class="sidebar-menu">
-        <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></li>
-        <li class="nav-item"><a href="documents.html" class="nav-link"><i class="bi bi-folder-symlink-fill"></i> Documents</a></li>
-        <li class="nav-item"><a href="upload.html" class="nav-link active"><i class="bi bi-camera-fill"></i> Direct Scan & OCR</a></li>
-        <li class="nav-item"><a href="reports.html" class="nav-link"><i class="bi bi-bar-chart-line-fill"></i> Reports</a></li>
-        <li class="nav-item"><a href="activity-log.html" class="nav-link"><i class="bi bi-clock-history"></i> Activity Log</a></li>
+        <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+        </li>
+        <li class="nav-item"><a href="documents.html" class="nav-link"><i class="bi bi-folder-symlink-fill"></i>
+            Documents</a></li>
+        <li class="nav-item"><a href="upload.html" class="nav-link active"><i class="bi bi-camera-fill"></i> Direct Scan
+            & OCR</a></li>
+        <li class="nav-item"><a href="reports.html" class="nav-link"><i class="bi bi-bar-chart-line-fill"></i>
+            Reports</a></li>
+        <li class="nav-item"><a href="activity-log.html" class="nav-link"><i class="bi bi-clock-history"></i> Activity
+            Log</a></li>
         <li class="nav-item"><a href="settings.html" class="nav-link"><i class="bi bi-gear-fill"></i> Settings</a></li>
       </ul>
       <div class="p-3">
-        <a href="index.html" class="nav-link text-white-50 d-flex align-items-center gap-2"><i class="bi bi-box-arrow-left"></i> Logout</a>
+        <a href="index.html" class="nav-link text-white-50 d-flex align-items-center gap-2"><i
+            class="bi bi-box-arrow-left"></i> Logout</a>
       </div>
     </aside>
 
@@ -38,10 +100,13 @@
       <div class="p-4">
         <div class="row g-4">
           <div class="col-lg-5">
-            <div class="custom-card p-3">
+            <div class="custom-card p-3 shadow-sm rounded-3">
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="fw-bold mb-0"><i class="bi bi-camera me-1"></i> Document Capture</h6>
-                <button class="btn btn-sm btn-outline-secondary" id="btnToggleSource" onclick="toggleInputSource()">Switch to Upload File</button>
+                <button class="btn btn-sm btn-outline-success rounded-pill fw-medium" id="btnToggleSource"
+                  onclick="toggleInputSource()">
+                  <i class="bi bi-upload me-1"></i> Switch to Upload File
+                </button>
               </div>
 
               <div id="webcamContainer" class="position-relative mb-3">
@@ -49,60 +114,121 @@
                 <canvas id="captureCanvas" class="d-none"></canvas>
               </div>
 
-              <div id="uploadContainer" class="dropzone-area d-none mb-3" onclick="document.getElementById('fileInput').click()">
-                <i class="bi bi-cloud-arrow-up display-4 text-success"></i>
-                <p class="mb-0 fw-semibold">Klik atau Drag & Drop Gambar Invoice</p>
-                <input type="file" id="fileInput" class="d-none" accept="image/*" onchange="handleFileUpload(event)">
+              <div id="uploadContainer" class="dropzone-area d-none mb-3" onclick="triggerFileInput()"
+                ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+
+                <div id="uploadPrompt">
+                  <i class="bi bi-cloud-arrow-up display-4 text-success"></i>
+                  <p class="mb-1 fw-semibold text-dark">Klik atau Drag & Drop Gambar Invoice</p>
+                  <small class="text-muted">Format: JPG, PNG, JPEG (Maks. 5MB)</small>
+                </div>
+
+                <div id="imagePreviewBox" class="img-preview-container d-none" onclick="event.stopPropagation()">
+                  <div class="preview-action-overlay">
+                    <button type="button" class="btn btn-sm btn-light border text-primary shadow-sm"
+                      onclick="triggerFileInput()" title="Ganti Foto">
+                      <i class="bi bi-arrow-repeat"></i> Ganti
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger shadow-sm" onclick="clearSelectedImage()"
+                      title="Hapus Foto">
+                      <i class="bi bi-trash"></i> Hapus
+                    </button>
+                  </div>
+                  <img id="previewImg" src="" alt="Preview Invoice">
+                </div>
+
+                <input type="file" id="fileInput" class="d-none" accept="image/*" onchange="handleFileSelect(event)">
               </div>
 
-              <button class="btn btn-primary-green w-100 py-2 fw-semibold" id="btnScan" onclick="processOCRFromSource()">
-                <i class="bi bi-camera-fill me-1"></i> Capture & Scan OCR
-              </button>
+              <div class="d-flex gap-2">
+                <button class="btn btn-success flex-grow-1 py-2 fw-semibold shadow-sm" id="btnScan"
+                  onclick="processOCRFromSource()">
+                  <i class="bi bi-search me-1"></i> <span id="btnScanText">Capture & Scan OCR</span>
+                </button>
+                <button class="btn btn-outline-danger py-2 d-none" id="btnResetAll" onclick="resetForm()"
+                  title="Reset Tampilan">
+                  <i class="bi bi-x-circle"></i>
+                </button>
+              </div>
             </div>
           </div>
 
           <div class="col-lg-7">
-            <div class="custom-card p-4">
+            <div class="custom-card p-4 shadow-sm rounded-3">
+
               <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                <h6 class="fw-bold mb-0"><i class="bi bi-table me-1"></i> Extracted OCR Results</h6>
-                <button class="btn btn-success btn-sm d-none" id="btnSaveToBackend" onclick="saveToBackendDatabase()">
-                  <i class="bi bi-cloud-upload me-1"></i> Save to Database
-                </button>
+                <h6 class="fw-bold mb-0"><i class="bi bi-table me-1"></i> Extracted OCR Results (Editable)</h6>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-outline-secondary btn-sm d-none" id="btnClearTable" onclick="resetForm()">
+                    <i class="bi bi-eraser me-1"></i> Bersihkan
+                  </button>
+                  <button class="btn btn-success btn-sm d-none" id="btnSaveToBackend" onclick="saveToBackendDatabase()">
+                    <i class="bi bi-cloud-upload me-1"></i> Simpan ke Database
+                  </button>
+                </div>
               </div>
 
               <div id="ocrPlaceholder" class="text-center py-5 text-muted">
                 <i class="bi bi-receipt display-1 opacity-25"></i>
-                <p class="mt-2 mb-0">Silakan **Ambil Foto / Upload Dokumen** di sebelah kiri untuk melihat hasil ekstraksi tabel otomatis.</p>
+                <p class="mt-3 mb-0" id="placeholderText">Silakan <strong>Ambil Foto / Upload Dokumen</strong> di
+                  sebelah kiri untuk melihat hasil ekstraksi tabel otomatis.</p>
               </div>
 
               <div id="ocrResultView" class="d-none">
-                <div class="bg-light p-3 rounded-3 mb-3">
-                  <div class="row g-2 small">
-                    <div class="col-6"><strong>Vendor:</strong> <span id="metaVendor">-</span></div>
-                    <div class="col-6"><strong>No. Invoice:</strong> <span id="metaInvNo">-</span></div>
-                    <div class="col-6"><strong>Tanggal:</strong> <span id="metaDate">-</span></div>
+
+                <div class="bg-light p-3 rounded-3 mb-3 border">
+                  <div class="row g-3 small text-dark">
+                    <div class="col-md-6">
+                      <label class="form-label fw-semibold mb-1">Nama Vendor:</label>
+                      <input type="text" id="metaVendorInput" class="form-control form-control-sm"
+                        placeholder="Nama Vendor">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-semibold mb-1">No. Invoice:</label>
+                      <input type="text" id="metaInvNoInput" class="form-control form-control-sm"
+                        placeholder="Nomor Invoice">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-semibold mb-1">Tanggal Invoice:</label>
+                      <input type="date" id="metaDateInput" class="form-control form-control-sm">
+                    </div>
                   </div>
                 </div>
 
                 <div class="table-responsive">
-                  <table class="table table-custom table-hover">
-                    <thead>
+                  <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
                       <tr>
-                        <th>No</th>
-                        <th>Deskripsi Barang</th>
-                        <th class="text-center">Qty</th>
-                        <th class="text-end">Harga</th>
-                        <th class="text-end">Jumlah</th>
+                        <th style="width: 50px;">No</th>
+                        <th>Deskripsi / Nama Barang</th>
+                        <th class="text-center" style="width: 90px;">Qty</th>
+                        <th class="text-end" style="width: 140px;">Harga Satuan</th>
+                        <th class="text-end" style="width: 140px;">Jumlah</th>
+                        <th class="text-center" style="width: 70px;">Aksi</th>
                       </tr>
                     </thead>
                     <tbody id="invoiceItemsTable"></tbody>
                   </table>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-2">
-                  <span class="fw-bold text-muted">Total Pembayaran</span>
-                  <h4 class="fw-bold text-success mb-0" id="invTotal">Rp. 0</h4>
+                <div class="mt-3">
+                  <button class="btn btn-outline-primary btn-sm" type="button" onclick="addNewItemRow()">
+                    <i class="bi bi-plus-lg me-1"></i> Tambah Baris
+                  </button>
                 </div>
+
+                <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-3">
+                  <div>
+                    <span class="text-muted small d-block">Status Ekstraksi</span>
+                    <span class="badge bg-success-subtle text-success border border-success"><i
+                        class="bi bi-check-circle me-1"></i> Siap Disimpan</span>
+                  </div>
+                  <div class="text-end">
+                    <span class="fw-bold text-muted small d-block">Total Pembayaran</span>
+                    <h3 class="fw-bold text-success mb-0" id="invTotal">Rp 0</h3>
+                  </div>
+                </div>
+
               </div>
 
             </div>
@@ -117,11 +243,12 @@
   <script src="assets/js/app.js"></script>
   <script src="assets/js/layout.js"></script>
   <script>
-    const BACKEND_API_URL = "http://localhost:8000/api";
+    const BACKEND_API_URL = "http://127.0.0.1:8000/api";
 
     let isCameraMode = true;
     let currentStream = null;
     let extractedDataCache = null;
+    let selectedFileBlob = null;
 
     document.addEventListener('DOMContentLoaded', () => {
       startCamera();
@@ -141,40 +268,67 @@
       const webcamContainer = document.getElementById('webcamContainer');
       const uploadContainer = document.getElementById('uploadContainer');
       const btnToggle = document.getElementById('btnToggleSource');
+      const btnScanText = document.getElementById('btnScanText');
 
       if (isCameraMode) {
         webcamContainer.classList.remove('d-none');
         uploadContainer.classList.add('d-none');
-        btnToggle.innerText = "Switch to Upload File";
+        btnToggle.innerHTML = '<i class="bi bi-upload me-1"></i> Switch to Upload File';
+        btnScanText.innerText = "Capture & Scan OCR";
         startCamera();
       } else {
         webcamContainer.classList.add('d-none');
         uploadContainer.classList.remove('d-none');
-        btnToggle.innerText = "Switch to Camera";
+        btnToggle.innerHTML = '<i class="bi bi-camera me-1"></i> Switch to Camera';
+        btnScanText.innerText = "Scan Selected Image";
         if (currentStream) {
           currentStream.getTracks().forEach(track => track.stop());
         }
       }
     }
 
-    function normalizeOCRPayload(data) {
-      return {
-        vendor: data.vendor || '',
-        invoice_number: data.invoice_number || data.invoiceNo || '',
-        invoice_date: data.invoice_date || data.date || '',
-        activity_name: data.activity_name || '',
-        division: data.division || '',
-        category: data.category || '',
-        payment_method: data.payment_method || '',
-        description: data.description || '',
-        grand_total: data.grand_total || data.grandTotal || 0,
-        items: (data.items || []).map((item) => ({
-          item: item.item || item.name || '',
-          qty: item.qty || item.quantity || 0,
-          price: item.price || 0,
-          total: item.total || 0
-        }))
+    function triggerFileInput() {
+      document.getElementById('fileInput').click();
+    }
+
+    function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('dragover'); }
+    function handleDragLeave(e) { e.preventDefault(); e.currentTarget.classList.remove('dragover'); }
+    function handleDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        processFilePreview(e.dataTransfer.files[0]);
+      }
+    }
+
+    function handleFileSelect(event) {
+      if (event.target.files && event.target.files[0]) {
+        processFilePreview(event.target.files[0]);
+      }
+    }
+
+    function processFilePreview(file) {
+      selectedFileBlob = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('previewImg').src = e.target.result;
+        document.getElementById('uploadPrompt').classList.add('d-none');
+        document.getElementById('imagePreviewBox').classList.remove('d-none');
+        document.getElementById('btnResetAll').classList.remove('d-none');
       };
+      reader.readAsDataURL(file);
+
+      sendToOCRBackend(selectedFileBlob);
+    }
+
+    function clearSelectedImage() {
+      selectedFileBlob = null;
+      document.getElementById('fileInput').value = "";
+      document.getElementById('previewImg').src = "";
+      document.getElementById('uploadPrompt').classList.remove('d-none');
+      document.getElementById('imagePreviewBox').classList.add('d-none');
+      document.getElementById('btnResetAll').classList.add('d-none');
+      resetForm();
     }
 
     async function processOCRFromSource() {
@@ -190,22 +344,21 @@
 
         imageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
       } else {
-        const fileInput = document.getElementById('fileInput');
-        if (fileInput.files.length === 0) {
-          alert("Pilih file terlebih dahulu!");
+        if (!selectedFileBlob) {
+          alert("Silakan pilih file gambar invoice terlebih dahulu!");
           return;
         }
-        imageBlob = fileInput.files[0];
+        imageBlob = selectedFileBlob;
       }
 
       sendToOCRBackend(imageBlob);
     }
 
     async function sendToOCRBackend(blob) {
-      App.showNotification("Memproses OCR dari Backend Server...");
+      showLoadingState(true);
 
       const formData = new FormData();
-      formData.append("file", blob, "invoice_capture.jpg");
+      formData.append("file", blob, blob.name || "invoice_capture.jpg");
 
       try {
         const response = await fetch(`${BACKEND_API_URL}/scan`, {
@@ -215,70 +368,237 @@
 
         const result = await response.json();
 
-        if (response.ok && result.success) {
-          extractedDataCache = normalizeOCRPayload(result.data);
+        if (response.ok && (result.success || result.data || result.vendor)) {
+          const payload = getBackendPayload(result);
+          extractedDataCache = normalizeOCRPayload(payload);
           renderOCRResultTable(extractedDataCache);
-          sessionStorage.setItem('pending_ocr_payload', JSON.stringify(extractedDataCache));
-          sessionStorage.setItem('pending_ocr_filename', blob.name || 'document.pdf');
-          App.showNotification("Ekstraksi Berhasil!");
         } else {
           throw new Error(result.detail || "Gagal memproses OCR.");
         }
       } catch (error) {
         console.error("Backend Error:", error);
-        alert(error.message || "Gagal terhubung ke Backend API Server (http://localhost:8000).");
+        alert("Gagal terhubung ke Server Backend (http://127.0.0.1:8000). Pastikan Uvicorn aktif!");
+        showLoadingState(false, true);
       }
     }
 
+    function getBackendPayload(result) {
+      if (!result || typeof result !== 'object') {
+        return { items: [], grand_total: 0 };
+      }
+      let candidate = result;
+      for (let depth = 0; depth < 5; depth++) {
+        if (candidate.items && Array.isArray(candidate.items)) return candidate;
+        if (candidate.data && typeof candidate.data === 'object') {
+          candidate = candidate.data;
+        } else {
+          break;
+        }
+      }
+      if (candidate.items && Array.isArray(candidate.items)) return candidate;
+      return { items: [], grand_total: 0 };
+    }
+
+    function showLoadingState(isLoading, isError = false) {
+      const placeholder = document.getElementById('ocrPlaceholder');
+      const resultView = document.getElementById('ocrResultView');
+      const btnScan = document.getElementById('btnScan');
+
+      if (isLoading) {
+        btnScan.disabled = true;
+        btnScan.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Membaca Invoice...`;
+        placeholder.classList.remove('d-none');
+        resultView.classList.add('d-none');
+        document.getElementById('placeholderText').innerHTML = `<div class="spinner-border text-success mb-2"></div><br>Sedang mengekstrak teks, tabel, & total harga...`;
+      } else {
+        btnScan.disabled = false;
+        btnScan.innerHTML = `<i class="bi bi-search me-1"></i> ${isCameraMode ? 'Capture & Scan OCR' : 'Scan Selected Image'}`;
+        if (isError) {
+          placeholder.classList.remove('d-none');
+          document.getElementById('placeholderText').innerText = "Gagal memproses gambar. Pastikan gambar berisi invoice yang jelas.";
+        }
+      }
+    }
+
+    function normalizeOCRPayload(data) {
+      const payload = data || {};
+      const itemsList = (payload.items && Array.isArray(payload.items)) ? payload.items.map((item) => {
+        let name = item.item || item.nama_barang || item.deskripsi || item.description || item.name || '';
+        if (name === "Dokumen / Barang Hasil Scan OCR") name = "";
+
+        const qty = Number(item.qty || item.quantity || item.jumlah_barang) || 1;
+        const price = Number(item.price || item.harga_satuan || item.harga || item.unit_price) || 0;
+        let total = Number(item.total || item.total_harga || item.jumlah) || 0;
+        if (total === 0) total = qty * price;
+
+        return { item: name, qty: qty, price: price, total: total };
+      }) : [];
+
+      let computedGrandTotal = Number(payload.grand_total || payload.grandTotal || payload.total_pembayaran || payload.total) || 0;
+      if (computedGrandTotal === 0 && itemsList.length > 0) {
+        computedGrandTotal = itemsList.reduce((sum, item) => sum + item.total, 0);
+      }
+
+      return {
+        vendor: payload.vendor || payload.nama_vendor || '',
+        invoice_number: payload.invoice_number || payload.invoiceNo || payload.no_invoice || '',
+        invoice_date: payload.invoice_date || payload.date || payload.tanggal || new Date().toISOString().split('T')[0],
+        grand_total: computedGrandTotal,
+        items: itemsList
+      };
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function formatCurrency(value) {
+      return Number(value || 0).toLocaleString('id-ID');
+    }
+
+    function recalculateTableSummary() {
+      if (!extractedDataCache) return;
+
+      const rows = Array.from(document.querySelectorAll('#invoiceItemsTable tr[data-index]'));
+      const items = rows.map((row) => {
+        const nameInput = row.querySelector('input[data-field="item"]');
+        const qtyInput = row.querySelector('input[data-field="qty"]');
+        const priceInput = row.querySelector('input[data-field="price"]');
+        const qty = Number(qtyInput?.value || 0);
+        const price = Number(priceInput?.value || 0);
+        const total = qty * price;
+
+        const rowTotal = row.querySelector('.row-total');
+        if (rowTotal) rowTotal.innerText = 'Rp ' + formatCurrency(total);
+
+        return { item: nameInput?.value?.trim() || '', qty, price, total };
+      });
+
+      extractedDataCache.items = items;
+      extractedDataCache.vendor = document.getElementById('metaVendorInput').value;
+      extractedDataCache.invoice_number = document.getElementById('metaInvNoInput').value;
+      extractedDataCache.invoice_date = document.getElementById('metaDateInput').value;
+      extractedDataCache.grand_total = items.reduce((sum, item) => sum + item.total, 0);
+
+      document.getElementById('invTotal').innerText = 'Rp ' + formatCurrency(extractedDataCache.grand_total);
+    }
+
+    function attachTableInteractions() {
+      document.querySelectorAll('#invoiceItemsTable input[data-field]').forEach((input) => {
+        input.oninput = () => { recalculateTableSummary(); };
+      });
+
+      document.getElementById('metaVendorInput').oninput = recalculateTableSummary;
+      document.getElementById('metaInvNoInput').oninput = recalculateTableSummary;
+      document.getElementById('metaDateInput').oninput = recalculateTableSummary;
+
+      document.querySelectorAll('#invoiceItemsTable button[data-action="delete"]').forEach((button) => {
+        button.onclick = () => {
+          const row = button.closest('tr');
+          const index = Number(row?.dataset.index || -1);
+          if (index >= 0 && extractedDataCache?.items) {
+            extractedDataCache.items.splice(index, 1);
+            renderOCRResultTable(extractedDataCache);
+          }
+        };
+      });
+    }
+
     function renderOCRResultTable(data) {
+      showLoadingState(false);
       document.getElementById('ocrPlaceholder').classList.add('d-none');
       document.getElementById('ocrResultView').classList.remove('d-none');
       document.getElementById('btnSaveToBackend').classList.remove('d-none');
+      document.getElementById('btnClearTable').classList.remove('d-none');
 
-      document.getElementById('metaVendor').innerText = data.vendor || "-";
-      document.getElementById('metaInvNo').innerText = data.invoice_number || "-";
-      document.getElementById('metaDate').innerText = data.invoice_date || "-";
+      extractedDataCache = data;
+
+      document.getElementById('metaVendorInput').value = extractedDataCache.vendor;
+      document.getElementById('metaInvNoInput').value = extractedDataCache.invoice_number;
+      document.getElementById('metaDateInput').value = extractedDataCache.invoice_date;
 
       const tbody = document.getElementById('invoiceItemsTable');
-      tbody.innerHTML = (data.items || []).map((item, index) => `
-        <tr>
-          <td>${index + 1}</td>
-          <td><strong>${item.item}</strong></td>
-          <td class="text-center">${item.qty}</td>
-          <td class="text-end">Rp. ${(item.price || 0).toLocaleString('id-ID')}</td>
-          <td class="text-end fw-semibold">Rp. ${(item.total || 0).toLocaleString('id-ID')}</td>
-        </tr>
-      `).join('');
 
-      document.getElementById('invTotal').innerText = "Rp. " + (data.grand_total || 0).toLocaleString('id-ID');
+      if (extractedDataCache.items && extractedDataCache.items.length > 0) {
+        tbody.innerHTML = extractedDataCache.items.map((item, index) => `
+          <tr data-index="${index}">
+            <td class="text-center">${index + 1}</td>
+            <td><input type="text" class="form-control form-control-sm" value="${escapeHtml(item.item)}" data-field="item" placeholder="Ketik nama barang..." /></td>
+            <td><input type="number" min="0" step="1" class="form-control form-control-sm text-center" value="${Number(item.qty || 1)}" data-field="qty" /></td>
+            <td><input type="number" min="0" step="1000" class="form-control form-control-sm text-end" value="${Number(item.price || 0)}" data-field="price" /></td>
+            <td class="text-end fw-semibold text-success"><span class="row-total">Rp ${formatCurrency(Number(item.total || 0))}</span></td>
+            <td class="text-center">
+              <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" title="Hapus baris">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">Tidak ada detail barang. Klik Tambah Baris di bawah.</td></tr>`;
+      }
+
+      attachTableInteractions();
+      recalculateTableSummary();
+    }
+
+    function addNewItemRow() {
+      if (!extractedDataCache) {
+        extractedDataCache = { vendor: '', invoice_number: '', invoice_date: new Date().toISOString().split('T')[0], grand_total: 0, items: [] };
+      }
+      extractedDataCache.items.push({ item: '', qty: 1, price: 0, total: 0 });
+      renderOCRResultTable(extractedDataCache);
+    }
+
+    function resetForm() {
+      extractedDataCache = null;
+      document.getElementById('ocrPlaceholder').classList.remove('d-none');
+      document.getElementById('ocrResultView').classList.add('d-none');
+      document.getElementById('btnSaveToBackend').classList.add('d-none');
+      document.getElementById('btnClearTable').classList.add('d-none');
+      document.getElementById('placeholderText').innerHTML = `Silakan <strong>Ambil Foto / Upload Dokumen</strong> di sebelah kiri untuk melihat hasil ekstraksi tabel otomatis.`;
     }
 
     async function saveToBackendDatabase() {
       if (!extractedDataCache) return;
 
+      recalculateTableSummary(); // Pastikan data terbaru terambil
+
+      const payload = {
+        vendor: document.getElementById('metaVendorInput').value || 'Unknown Vendor',
+        invoice_number: document.getElementById('metaInvNoInput').value || '-',
+        invoice_date: document.getElementById('metaDateInput').value || new Date().toISOString().split('T')[0],
+        payment_method: 'Transfer',
+        items: extractedDataCache.items.map((item) => ({
+          item: item.item || 'Barang / Jasa',
+          qty: Number(item.qty || 0),
+          price: Number(item.price || 0),
+          total: Number(item.total || 0),
+        })),
+        grand_total: extractedDataCache.items.reduce((sum, item) => sum + Number(item.total || 0), 0),
+      };
+
       try {
         const response = await fetch(`${BACKEND_API_URL}/save`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(extractedDataCache)
+          body: JSON.stringify(payload)
         });
 
         const result = await response.json();
 
-        if (response.ok && result.success) {
-          App.showNotification("Data Invoice Berhasil Disimpan ke Database!");
-          await Store.syncDocuments();
-          setTimeout(() => {
-            window.location.href = "documents.html";
-          }, 1200);
+        if (response.ok && (result.success || response.status === 200)) {
+          alert("Data Invoice Berhasil Disimpan ke Database!");
+          window.location.href = "documents.html";
         } else {
           throw new Error(result.detail || "Gagal menyimpan data ke backend database.");
         }
       } catch (error) {
         console.error("Error saving to database:", error);
-        alert(error.message || "Gagal menyimpan data ke backend database.");
+        alert(error.message || "Gagal menyimpan data ke database.");
       }
     }
   </script>
 </body>
+
 </html>
