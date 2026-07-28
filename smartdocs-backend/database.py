@@ -58,16 +58,23 @@ def init_db() -> None:
                 vendor_name VARCHAR(255) DEFAULT '',
                 activity_name VARCHAR(255) DEFAULT '',
                 invoice_number VARCHAR(100) DEFAULT '',
+                no_invoice VARCHAR(100) DEFAULT '',
+                invoice_date VARCHAR(50) DEFAULT '',
                 division VARCHAR(100) DEFAULT '',
                 category VARCHAR(100) DEFAULT '',
                 payment_method VARCHAR(100) DEFAULT '',
                 description TEXT,
-                invoice_date VARCHAR(50) DEFAULT '',
                 grand_total DECIMAL(12, 2) DEFAULT 0.00,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
             """
         )
+        cursor.execute("ALTER TABLE documents ADD COLUMN IF NOT EXISTS invoice_number VARCHAR(100) DEFAULT ''")
+        cursor.execute("ALTER TABLE documents ADD COLUMN IF NOT EXISTS no_invoice VARCHAR(100) DEFAULT ''")
+        cursor.execute("ALTER TABLE documents ADD COLUMN IF NOT EXISTS division VARCHAR(100) DEFAULT ''")
+        cursor.execute("ALTER TABLE documents ADD COLUMN IF NOT EXISTS category VARCHAR(100) DEFAULT ''")
+        cursor.execute("ALTER TABLE documents ADD COLUMN IF NOT EXISTS payment_method VARCHAR(100) DEFAULT ''")
+        cursor.execute("ALTER TABLE documents ADD COLUMN IF NOT EXISTS description TEXT")
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS document_items (
@@ -108,88 +115,103 @@ def save_document(payload: dict[str, Any]) -> int:
     """Persist a document and its OCR items within a database transaction or fallback store."""
     try:
         connection = get_connection()
-        cursor = None
-        document_id = None
-        try:
-            connection.start_transaction()
-            cursor = connection.cursor()
-            cursor.execute(
-                """
-                INSERT INTO documents (
-                    vendor_name, activity_name, invoice_number, invoice_date,
-                    division, category, payment_method, description, grand_total
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """,
-                (
-                    payload.get("vendor", "") or "",
-                    payload.get("activity_name", "") or "",
-                    payload.get("invoice_number", "") or "",
-                    payload.get("invoice_date", "") or "",
-                    payload.get("division", "") or "",
-                    payload.get("category", "") or "",
-                    payload.get("payment_method", "") or "",
-                    payload.get("description", "") or "",
-                    payload.get("grand_total", 0) or 0,
-                ),
-            )
-            document_id = cursor.lastrowid
-            for item in payload.get("items", []) or []:
-                cursor.execute(
-                    """
-                    INSERT INTO document_items (document_id, item_name, quantity, price, total_price)
-                    VALUES (%s, %s, %s, %s, %s)
-                    """,
-                    (
-                        document_id,
-                        item.get("item") or item.get("name") or "",
-                        item.get("qty") or item.get("quantity") or 0,
-                        item.get("price") or 0,
-                        item.get("total") or 0,
-                    ),
-                )
-            cursor.execute(
-                "INSERT INTO activity_logs (user_action, document_id) VALUES (%s, %s)",
-                (f"Saved OCR document {payload.get('invoice_number', '')}".strip(), document_id),
-            )
-            connection.commit()
-            return document_id or 0
-        except Error as exc:
-            if connection is not None:
-                connection.rollback()
-            raise RuntimeError(f"Database write failed: {exc}") from exc
-        finally:
-            if cursor is not None:
-                cursor.close()
-            if connection is not None:
-                connection.close()
-    except Exception:
+    except Error as exc:
+        connection = None
+        print(f"Database connection failed: {exc}")
+
+    if connection is None:
         store = _read_fallback_store()
         document_id = int(datetime.now().timestamp() * 1000)
+        invoice_value = payload.get("invoice_number", "") or payload.get("no_invoice", "") or ""
         document_payload = {
             "id": document_id,
             "vendor_name": payload.get("vendor", "") or "",
             "activity_name": payload.get("activity_name", "") or "",
-            "invoice_number": payload.get("invoice_number", "") or "",
+            "invoice_number": invoice_value,
             "invoice_date": payload.get("invoice_date", "") or "",
             "division": payload.get("division", "") or "",
             "category": payload.get("category", "") or "",
             "payment_method": payload.get("payment_method", "") or "",
             "description": payload.get("description", "") or "",
-            "grand_total": payload.get("grand_total", 0) or 0,
+            "grand_total": float(payload.get("grand_total", 0) or 0),
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "items": payload.get("items", []) or [],
+            "items": [
+                {
+                    "item": item.get("item") or item.get("name") or "",
+                    "qty": float(item.get("qty") or item.get("quantity") or 0),
+                    "price": float(item.get("price") or 0),
+                    "total": float(item.get("total") or 0),
+                }
+                for item in (payload.get("items", []) or [])
+            ],
         }
         store.setdefault("documents", []).append(document_payload)
         store.setdefault("activity_logs", []).append(
             {
                 "id": len(store["activity_logs"]) + 1,
-                "user_action": f"Saved OCR document {payload.get('invoice_number', '')}".strip(),
+                "user_action": f"Saved OCR document {invoice_value}".strip(),
                 "document_id": document_id,
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             }
         )
         _write_fallback_store(store)
         return document_id
+
+    cursor = None
+    try:
+        cursor = connection.cursor()
+        connection.start_transaction()
+        invoice_value = payload.get("invoice_number", "") or payload.get("no_invoice", "") or ""
+        cursor.execute(
+            """
+            INSERT INTO documents (
+                vendor_name, activity_name, invoice_number, no_invoice, invoice_date,
+                division, category, payment_method, description, grand_total
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                payload.get("vendor", "") or "",
+                payload.get("activity_name", "") or "",
+                invoice_value,
+                invoice_value,
+                payload.get("invoice_date", "") or "",
+                payload.get("division", "") or "",
+                payload.get("category", "") or "",
+                payload.get("payment_method", "") or "",
+                payload.get("description", "") or "",
+                payload.get("grand_total", 0) or 0,
+            ),
+        )
+        document_id = cursor.lastrowid
+        for item in payload.get("items", []) or []:
+            cursor.execute(
+                """
+                INSERT INTO document_items (document_id, item_name, quantity, price, total_price)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (
+                    document_id,
+                    item.get("item") or item.get("name") or "",
+                    item.get("qty") or item.get("quantity") or 0,
+                    item.get("price") or 0,
+                    item.get("total") or 0,
+                ),
+            )
+        cursor.execute(
+            "INSERT INTO activity_logs (user_action, document_id) VALUES (%s, %s)",
+            (f"Saved OCR document {invoice_value}".strip(), document_id),
+        )
+        connection.commit()
+        return document_id or 0
+    except Error as exc:
+        if connection is not None:
+            connection.rollback()
+        raise RuntimeError(f"Database write failed: {exc}") from exc
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 
 def get_documents() -> list[dict[str, Any]]:
@@ -201,8 +223,8 @@ def get_documents() -> list[dict[str, Any]]:
             cursor = connection.cursor(dictionary=True)
             cursor.execute(
                 """
-                SELECT id, vendor_name, activity_name, invoice_number, invoice_date,
-                       division, category, payment_method, description, grand_total, created_at
+                SELECT id, vendor_name, activity_name, COALESCE(no_invoice, invoice_number) AS invoice_number,
+                       invoice_date, division, category, payment_method, description, grand_total, created_at
                 FROM documents
                 ORDER BY created_at DESC
                 """
@@ -213,6 +235,7 @@ def get_documents() -> list[dict[str, Any]]:
                     "id": doc["id"],
                     "name": f"{doc['invoice_number'] or 'Document'}-{doc['id']}",
                     "vendor": doc["vendor_name"],
+                    "invoice_number": doc["invoice_number"],
                     "category": doc["category"],
                     "division": doc["division"],
                     "date": str(doc["invoice_date"] or ""),
@@ -245,6 +268,78 @@ def get_documents() -> list[dict[str, Any]]:
         ]
 
 
+def get_document_with_items(document_id: int) -> dict[str, Any]:
+    """Return detailed document metadata and its related item rows from the database."""
+    try:
+        connection = get_connection()
+        cursor = None
+        try:
+            cursor = connection.cursor(dictionary=True)
+            # Ambil data utama dokumen
+            cursor.execute(
+                """
+                SELECT id, vendor_name, activity_name, 
+                       COALESCE(NULLIF(invoice_number, ''), no_invoice) AS invoice_number,
+                       invoice_date, division, category, payment_method, description, grand_total, created_at
+                FROM documents
+                WHERE id = %s
+                """,
+                (document_id,),
+            )
+            document = cursor.fetchone()
+            if not document:
+                return {}
+
+            # Ambil item terkait dari tabel document_items secara terpisah agar aman dari duplikasi LEFT JOIN
+            cursor.execute(
+                """
+                SELECT item_name, quantity, price, total_price
+                FROM document_items
+                WHERE document_id = %s
+                ORDER BY id ASC
+                """,
+                (document_id,),
+            )
+            item_rows = cursor.fetchall() or []
+
+            items = [
+                {
+                    "item": row.get("item_name", ""),
+                    "qty": float(row.get("quantity") or 0),
+                    "price": float(row.get("price") or 0),
+                    "total": float(row.get("total_price") or 0),
+                }
+                for row in item_rows
+            ]
+
+            return {
+                "id": document["id"],
+                "vendor": document["vendor_name"] or "",
+                "vendor_name": document["vendor_name"] or "",
+                "invoice_number": document["invoice_number"] or "",
+                "invoice_date": str(document["invoice_date"] or ""),
+                "activity_name": document["activity_name"] or "",
+                "division": document["division"] or "",
+                "category": document["category"] or "",
+                "payment_method": document["payment_method"] or "",
+                "description": document["description"] or "",
+                "grand_total": float(document["grand_total"] or 0),
+                "created_at": document["created_at"].strftime("%Y-%m-%d %H:%M:%S") if isinstance(document.get("created_at"), datetime) else str(document.get("created_at") or ""),
+                "items": items,
+            }
+        finally:
+            if cursor is not None:
+                cursor.close()
+            if connection is not None:
+                connection.close()
+    except Exception:
+        store = _read_fallback_store()
+        for doc in store.get("documents", []):
+            if int(doc.get("id", 0)) == document_id:
+                return doc
+        return {}
+
+
 def get_dashboard_stats() -> dict[str, Any]:
     """Build simple dashboard statistics from the database or fallback store."""
     try:
@@ -258,7 +353,7 @@ def get_dashboard_stats() -> dict[str, Any]:
             total_expenses = float(cursor.fetchone()["total_expenses"] or 0)
             cursor.execute(
                 """
-                SELECT id, vendor_name, invoice_number, invoice_date, grand_total
+                SELECT id, vendor_name, COALESCE(no_invoice, invoice_number) AS invoice_number, invoice_date, grand_total
                 FROM documents
                 ORDER BY created_at DESC
                 LIMIT 5

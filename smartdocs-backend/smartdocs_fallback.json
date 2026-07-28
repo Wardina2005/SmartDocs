@@ -32,6 +32,210 @@
           "total": 1800000.0
         }
       ]
+    },
+    {
+      "id": 1785199085142,
+      "vendor_name": "CV Cahaya MEDIA",
+      "activity_name": "",
+      "invoice_number": "-",
+      "invoice_date": "2026-07-28",
+      "division": "",
+      "category": "",
+      "payment_method": "",
+      "description": "",
+      "grand_total": 1500000.0,
+      "created_at": "2026-07-28 07:38:05",
+      "items": [
+        {
+          "item": "Bola Voly",
+          "qty": 1.0,
+          "price": 350000.0,
+          "total": 350000.0
+        },
+        {
+          "item": "Bola Basket",
+          "qty": 2.0,
+          "price": 250000.0,
+          "total": 500000.0
+        },
+        {
+          "item": "Stik Softball",
+          "qty": 1.0,
+          "price": 250000.0,
+          "total": 250000.0
+        },
+        {
+          "item": "[Bcla Plmpong",
+          "qty": 2.0,
+          "price": 75000.0,
+          "total": 150000.0
+        },
+        {
+          "item": "Shuttle Cock",
+          "qty": 2.0,
+          "price": 125000.0,
+          "total": 250000.0
+        }
+      ]
+    },
+    {
+      "id": 1785200490824,
+      "vendor_name": "INVOICE SALFORD & CO.",
+      "activity_name": "",
+      "invoice_number": "SALFORD",
+      "invoice_date": "2022-03-27",
+      "division": "",
+      "category": "",
+      "payment_method": "",
+      "description": "",
+      "grand_total": 750000.0,
+      "created_at": "2026-07-28 08:01:30",
+      "items": [
+        {
+          "item": "KAOS",
+          "qty": 1.0,
+          "price": 100000.0,
+          "total": 100000.0
+        },
+        {
+          "item": "JAKET",
+          "qty": 1.0,
+          "price": 200000.0,
+          "total": 200000.0
+        },
+        {
+          "item": "KAOS POLO",
+          "qty": 1.0,
+          "price": 120000.0,
+          "total": 120000.0
+        },
+        {
+          "item": "SEPATU",
+          "qty": 1.0,
+          "price": 230000.0,
+          "total": 230000.0
+        },
+        {
+          "item": "SEPATU",
+          "qty": 1.0,
+          "price": 100000.0,
+          "total": 100000.0
+        }
+      ]
+    },
+    {
+      "id": 1785201400973,
+      "vendor_name": "Test Vendor",
+      "activity_name": "",
+      "invoice_number": "INV-1234",
+      "invoice_date": "2026-07-28",
+      "division": "",
+      "category": "",
+      "payment_method": "",
+      "description": "",
+      "grand_total": 150000.0,
+      "created_at": "2026-07-28 08:16:40",
+      "items": [
+        {
+          "item": "Item A",
+          "qty": 2.0,
+          "price": 50000.0,
+          "total": 100000.0
+        },
+        {
+          "item": "Item B",
+          "qty": 1.0,
+          "price": 50000.0,
+          "total": 50000.0
+        }
+      ]
+    },
+    {
+      "id": 1785201533208,
+      "vendor_name": "DiagVendor",
+      "activity_name": "Diag",
+      "invoice_number": "INV-DIAG",
+      "invoice_date": "2026-07-28",
+      "division": "Test",
+      "category": "Test",
+      "payment_method": "Cash",
+      "description": "Diag",
+      "grand_total": 99999,
+      "created_at": "2026-07-28 08:18:53",
+      "items": [
+        {
+          "item": "TestItem",
+          "qty": 1,
+          "price": 99999,
+          "total": 99999
+        }
+      ]
+    },
+    {
+      "id": 1785201877115,
+      "vendor_name": "INVOICE SALFORD & CO.",
+      "activity_name": "",
+      "invoice_number": "SALFORD",
+      "invoice_date": "2022-03-27",
+      "division": "",
+      "category": "",
+      "payment_method": "",
+      "description": "",
+      "grand_total": 750000.0,
+      "created_at": "2026-07-28 08:24:37",
+      "items": [
+        {
+          "item": "KAOS",
+          "qty": 1.0,
+          "price": 100000.0,
+          "total": 100000.0
+        },
+        {
+          "item": "JAKET",
+          "qty": 1.0,
+          "price": 200000.0,
+          "total": 200000.0
+        },
+        {
+          "item": "KAOS POLO",
+          "qty": 1.0,
+          "price": 120000.0,
+          "total": 120000.0
+        },
+        {
+          "item": "SEPATU",
+          "qty": 1.0,
+          "price": 230000.0,
+          "total": 230000.0
+        },
+        {
+          "item": "SEPATU",
+          "qty": 1.0,
+          "price": 100000.0,
+          "total": 100000.0
+        }
+      ]
+    },
+    {
+      "id": 1785202089022,
+      "vendor_name": "DiagVendor",
+      "activity_name": "Diag",
+      "invoice_number": "INV-DIAG",
+      "invoice_date": "2026-07-28",
+      "division": "Test",
+      "category": "Test",
+      "payment_method": "Cash",
+      "description": "Diag",
+      "grand_total": 99999,
+      "created_at": "2026-07-28 08:28:09",
+      "items": [
+        {
+          "item": "TestItem",
+          "qty": 1,
+          "price": 99999,
+          "total": 99999
+        }
+      ]
     }
   ],
   "activity_logs": [
@@ -40,6 +244,42 @@
       "user_action": "Saved OCR document 123-456-7890",
       "document_id": 1785161110331,
       "timestamp": "2026-07-27 21:05:10"
+    },
+    {
+      "id": 2,
+      "user_action": "Saved OCR document -",
+      "document_id": 1785199085142,
+      "timestamp": "2026-07-28 07:38:05"
+    },
+    {
+      "id": 3,
+      "user_action": "Saved OCR document SALFORD",
+      "document_id": 1785200490824,
+      "timestamp": "2026-07-28 08:01:30"
+    },
+    {
+      "id": 4,
+      "user_action": "Saved OCR document INV-1234",
+      "document_id": 1785201400973,
+      "timestamp": "2026-07-28 08:16:40"
+    },
+    {
+      "id": 5,
+      "user_action": "Saved OCR document INV-DIAG",
+      "document_id": 1785201533208,
+      "timestamp": "2026-07-28 08:18:53"
+    },
+    {
+      "id": 6,
+      "user_action": "Saved OCR document SALFORD",
+      "document_id": 1785201877115,
+      "timestamp": "2026-07-28 08:24:37"
+    },
+    {
+      "id": 7,
+      "user_action": "Saved OCR document INV-DIAG",
+      "document_id": 1785202089022,
+      "timestamp": "2026-07-28 08:28:09"
     }
   ]
 }

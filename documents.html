@@ -54,34 +54,100 @@
   </div>
 
   <div class="modal fade" id="docPreviewModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content rounded-4 border-0">
-        <div class="modal-header border-bottom-0 pb-0">
-          <h5 class="modal-title fw-bold" id="modalDocTitle">Document Details</h5>
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content rounded-5 border-0 shadow-lg overflow-hidden">
+        <div class="modal-header bg-white border-bottom px-5 py-4">
+          <div>
+            <h4 class="modal-title fw-bold mb-1" id="modalDocTitle">Document Details</h4>
+            <p class="text-muted mb-0" id="modalDocSubtitle">Detail metadata & item breakdown</p>
+          </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-4">
-          <div class="row g-4">
-            <div class="col-md-6">
-              <div class="bg-dark text-white rounded-3 p-4 d-flex flex-column align-items-center justify-content-center h-100" style="min-height: 250px;">
-                <i class="bi bi-file-earmark-pdf text-danger display-1 mb-2"></i>
-                <p class="text-white-50 small mb-0">[ Document Preview ]</p>
+        <div class="modal-body px-5 py-4 bg-body">
+          <div class="row gx-4 gy-4 mb-4">
+            <div class="col-lg-5">
+              <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <h6 class="text-uppercase text-secondary small mb-3">Informasi Dokumen</h6>
+                  <dl class="row mb-0">
+                    <dt class="col-5 text-muted">Vendor</dt>
+                    <dd class="col-7 fw-semibold mb-3" id="modalVendor">-</dd>
+
+                    <dt class="col-5 text-muted">No. Invoice</dt>
+                    <dd class="col-7 fw-semibold mb-3" id="modalInvoiceNumber">-</dd>
+
+                    <dt class="col-5 text-muted">Tanggal Invoice</dt>
+                    <dd class="col-7 fw-semibold mb-3" id="modalDate">-</dd>
+
+                    <dt class="col-5 text-muted">Division</dt>
+                    <dd class="col-7 fw-semibold mb-3" id="modalDivision">-</dd>
+
+                    <dt class="col-5 text-muted">Category</dt>
+                    <dd class="col-7 fw-semibold mb-0" id="modalCategory">-</dd>
+                  </dl>
+                </div>
               </div>
             </div>
-            <div class="col-md-6">
-              <ul class="list-group list-group-flush small">
-                <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Vendor:</span><strong id="modalVendor">-</strong></li>
-                <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Category:</span><span id="modalCategory" class="badge bg-light-green">-</span></li>
-                <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Division:</span><strong id="modalDivision">-</strong></li>
-                <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Date:</span><span id="modalDate">-</span></li>
-                <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Status:</span><span id="modalStatus" class="badge bg-success-subtle text-success">-</span></li>
-              </ul>
+            <div class="col-lg-7">
+              <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                      <p class="text-uppercase text-secondary small mb-2">Grand Total</p>
+                      <h3 class="fw-bold text-success mb-0" id="modalGrandTotal">Rp 0</h3>
+                    </div>
+                    <span class="badge bg-success-subtle text-success" id="modalStatus">Stored</span>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-borderless mb-0">
+                      <tbody>
+                        <tr>
+                          <td class="fw-semibold text-muted">Created At</td>
+                          <td id="modalCreatedAt">-</td>
+                        </tr>
+                        <tr>
+                          <td class="fw-semibold text-muted">Payment Method</td>
+                          <td id="modalPaymentMethod">-</td>
+                        </tr>
+                        <tr>
+                          <td class="fw-semibold text-muted">Description</td>
+                          <td id="modalDescription">-</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+              <h6 class="mb-0 fw-semibold">Rincian Barang</h6>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th style="width: 60px;">No</th>
+                      <th>Deskripsi Barang</th>
+                      <th class="text-center" style="width: 100px;">Qty</th>
+                      <th class="text-end" style="width: 150px;">Harga Satuan</th>
+                      <th class="text-end" style="width: 150px;">Jumlah</th>
+                    </tr>
+                  </thead>
+                  <tbody id="modalItemsTable">
+                    <tr><td colspan="5" class="text-center text-muted py-4">Pilih dokumen untuk melihat rincian item.</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
-        <div class="modal-footer border-top-0 pt-0">
-          <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary-green" onclick="App.showNotification('File downloaded!')"><i class="bi bi-download me-1"></i> Download File</button>
+        <div class="modal-footer bg-white border-top-0 py-3">
+          <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-success rounded-pill" onclick="window.location.href='documents.html'">Lihat Semua Dokumen</button>
         </div>
       </div>
     </div>
@@ -92,6 +158,7 @@
   <script src="assets/js/app.js"></script>
   <script src="assets/js/layout.js"></script>
   <script>
+    const BACKEND_API_URL = 'http://127.0.0.1:8000/api';
     let previewModal;
     document.addEventListener('DOMContentLoaded', async () => {
       previewModal = new bootstrap.Modal(document.getElementById('docPreviewModal'));
@@ -108,9 +175,9 @@
         return;
       }
 
-      grid.innerHTML = docs.map((doc, index) => `
+      grid.innerHTML = docs.map((doc) => `
         <div class="col-12 col-md-6 col-lg-4">
-          <div class="custom-card doc-card p-3 h-100 d-flex flex-column justify-content-between" onclick="openDocModal(${index})">
+          <div class="custom-card doc-card p-3 h-100 d-flex flex-column justify-content-between" onclick="openDocModal(${doc.id})">
             <div>
               <div class="d-flex align-items-center justify-content-between mb-3">
                 <span class="badge bg-light-green">${doc.category || 'General'}</span>
@@ -119,11 +186,11 @@
               <div class="text-center py-3 bg-light rounded-3 mb-3">
                 <i class="bi bi-file-earmark-pdf-fill text-danger display-4"></i>
               </div>
-              <h6 class="fw-bold text-truncate mb-1">${doc.name}</h6>
+              <h6 class="fw-bold text-truncate mb-1">${doc.invoice_number || doc.name}</h6>
               <p class="text-muted small mb-0">Vendor: ${doc.vendor || 'N/A'}</p>
             </div>
             <div class="border-top pt-3 mt-3 d-flex justify-content-between align-items-center">
-              <span class="text-muted small">${doc.date}</span>
+              <span class="text-muted small">${doc.invoice_date || doc.date || '-'}</span>
               <span class="badge bg-success-subtle text-success">${doc.status || 'Verified'}</span>
             </div>
           </div>
@@ -131,18 +198,84 @@
       `).join('');
     }
 
-    function openDocModal(index) {
-      const docs = Store.getDocuments();
-      const doc = docs[index];
-      if (doc) {
-        document.getElementById('modalDocTitle').innerText = doc.name;
-        document.getElementById('modalVendor').innerText = doc.vendor || 'N/A';
-        document.getElementById('modalCategory').innerText = doc.category || 'General';
-        document.getElementById('modalDivision').innerText = doc.division || 'Finance';
-        document.getElementById('modalDate').innerText = doc.date || '-';
-        document.getElementById('modalStatus').innerText = doc.status || 'Verified';
+    async function openDocModal(documentId) {
+      try {
+        // Langsung ambil data terbaru dari backend FastAPI berdasarkan ID
+        const response = await fetch(`${BACKEND_API_URL}/documents/${documentId}`);
+        if (!response.ok) {
+          throw new Error(`Backend returned status ${response.status}`);
+        }
+        const result = await response.json();
+        
+        // Sesuaikan dengan struktur response backend Anda (apakah langsung 'result' atau dibungkus 'result.document')
+        const doc = result.document || result;
+        if (!doc) {
+          throw new Error('Data dokumen tidak ditemukan dalam response API');
+        }
+        
+        fillDocModal(doc);
+        previewModal.show();
+      } catch (error) {
+        console.warn('Gagal memuat dari API, mencoba fallback ke cache lokal.', error);
+        
+        // Fallback jika fetch API gagal total
+        const docs = Store.getDocuments();
+        const doc = docs.find((item) => String(item.id) === String(documentId));
+        if (!doc) {
+          alert('Dokumen tidak ditemukan.');
+          return;
+        }
+        fillDocModal(doc);
         previewModal.show();
       }
+    }
+
+    function fillDocModal(doc) {
+      const items = Array.isArray(doc.items) ? doc.items : [];
+      const title = doc.invoice_number ? `${doc.invoice_number}` : doc.vendor || 'Document Detail';
+      document.getElementById('modalDocTitle').innerText = title;
+      document.getElementById('modalDocSubtitle').innerText = `${doc.vendor || '-'} • ${doc.activity_name || 'No activity'} • ${doc.invoice_date || '-'}`;
+      document.getElementById('modalVendor').innerText = doc.vendor || '-';
+      document.getElementById('modalInvoiceNumber').innerText = doc.invoice_number || '-';
+      document.getElementById('modalDate').innerText = doc.invoice_date || '-';
+      document.getElementById('modalDivision').innerText = doc.division || '-';
+      document.getElementById('modalCategory').innerText = doc.category || '-';
+      document.getElementById('modalStatus').innerText = 'Stored';
+      document.getElementById('modalGrandTotal').innerText = `Rp ${formatCurrency(doc.grand_total || 0)}`;
+      document.getElementById('modalCreatedAt').innerText = doc.created_at || '-';
+      document.getElementById('modalPaymentMethod').innerText = doc.payment_method || '-';
+      document.getElementById('modalDescription').innerText = doc.description || '-';
+
+      const tbody = document.getElementById('modalItemsTable');
+      if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Tidak ada item yang tersimpan untuk dokumen ini.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map((item, index) => {
+        const description = escapeHtml(item.item || item.item_name || '-');
+        const qty = Number(item.qty || item.quantity || 0).toLocaleString('id-ID');
+        const price = formatCurrency(item.price || 0);
+        const total = formatCurrency(item.total || item.total_price || 0);
+
+        return `
+          <tr>
+            <td class="text-center">${index + 1}</td>
+            <td>${description}</td>
+            <td class="text-center">${qty}</td>
+            <td class="text-end">Rp ${price}</td>
+            <td class="text-end">Rp ${total}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(value) {
+      return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function formatCurrency(value) {
+      return Number(value || 0).toLocaleString('id-ID');
     }
   </script>
 </body>

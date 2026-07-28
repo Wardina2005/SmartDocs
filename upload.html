@@ -439,10 +439,16 @@
         computedGrandTotal = itemsList.reduce((sum, item) => sum + item.total, 0);
       }
 
+      const rawDate = payload.invoice_date || payload.date || payload.tanggal || '';
+      const parsedDate = new Date(rawDate);
+      const invoiceDate = (!rawDate || Number.isNaN(parsedDate.getTime()))
+        ? new Date().toISOString().split('T')[0]
+        : parsedDate.toISOString().split('T')[0];
+
       return {
         vendor: payload.vendor || payload.nama_vendor || '',
         invoice_number: payload.invoice_number || payload.invoiceNo || payload.no_invoice || '',
-        invoice_date: payload.invoice_date || payload.date || payload.tanggal || new Date().toISOString().split('T')[0],
+        invoice_date: invoiceDate,
         grand_total: computedGrandTotal,
         items: itemsList
       };
@@ -564,38 +570,50 @@
 
       recalculateTableSummary(); // Pastikan data terbaru terambil
 
-      const payload = {
-        vendor: document.getElementById('metaVendorInput').value || 'Unknown Vendor',
-        invoice_number: document.getElementById('metaInvNoInput').value || '-',
-        invoice_date: document.getElementById('metaDateInput').value || new Date().toISOString().split('T')[0],
-        payment_method: 'Transfer',
-        items: extractedDataCache.items.map((item) => ({
-          item: item.item || 'Barang / Jasa',
+      const items = extractedDataCache.items
+        .map((item) => ({
+          item: (item.item || '').trim() || 'Barang / Jasa',
           qty: Number(item.qty || 0),
           price: Number(item.price || 0),
           total: Number(item.total || 0),
-        })),
-        grand_total: extractedDataCache.items.reduce((sum, item) => sum + Number(item.total || 0), 0),
+        }))
+        .filter((item) => item.qty > 0 || item.price > 0 || item.item !== 'Barang / Jasa');
+
+      const payload = {
+        vendor: document.getElementById('metaVendorInput').value.trim() || 'Unknown Vendor',
+        invoice_number: document.getElementById('metaInvNoInput').value.trim() || '-',
+        invoice_date: document.getElementById('metaDateInput').value || new Date().toISOString().split('T')[0],
+        division: extractedDataCache.division || '',
+        category: extractedDataCache.category || '',
+        payment_method: extractedDataCache.payment_method || '',
+        description: extractedDataCache.description || '',
+        items,
+        grand_total: items.reduce((sum, item) => sum + Number(item.total || 0), 0),
       };
+
+      if (items.length === 0) {
+        alert('Silakan tambahkan setidaknya satu baris item sebelum menyimpan.');
+        return;
+      }
 
       try {
         const response = await fetch(`${BACKEND_API_URL}/save`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
         });
 
         const result = await response.json();
 
-        if (response.ok && (result.success || response.status === 200)) {
-          alert("Data Invoice Berhasil Disimpan ke Database!");
-          window.location.href = "documents.html";
+        if (response.ok && result.success) {
+          alert('Data invoice berhasil disimpan ke database.');
+          window.location.href = 'documents.html';
         } else {
-          throw new Error(result.detail || "Gagal menyimpan data ke backend database.");
+          throw new Error(result.detail || 'Gagal menyimpan data ke backend database.');
         }
       } catch (error) {
-        console.error("Error saving to database:", error);
-        alert(error.message || "Gagal menyimpan data ke database.");
+        console.error('Error saving to database:', error);
+        alert(error.message || 'Gagal menyimpan data ke database.');
       }
     }
   </script>

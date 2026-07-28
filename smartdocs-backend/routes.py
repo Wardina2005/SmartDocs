@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from database import (
     get_activity_logs,
     get_dashboard_stats,
+    get_document_with_items,
     get_documents,
     get_reports_data,
     save_document,
@@ -71,13 +72,12 @@ async def scan_document(file: UploadFile = File(...)) -> Dict[str, Any]:
 async def save_document_route(payload: SaveDocumentPayload) -> JSONResponse:
     """Save OCR results to MySQL and return the stored document identifier."""
     try:
-        # Menggunakan model_dump() untuk Pydantic v2
-        doc_data = payload.model_dump() if hasattr(payload, "model_dump") else payload.dict()
-        document_id = save_document(doc_data)
-        
+        document_data = payload.model_dump() if hasattr(payload, "model_dump") else payload.dict()
+        document_id = save_document(document_data)
+
         return JSONResponse(
-            status_code=200, 
-            content={"success": True, "document_id": document_id}
+            status_code=200,
+            content={"success": True, "document_id": document_id},
         )
     except Exception as exc:
         raise HTTPException(
@@ -90,6 +90,19 @@ def list_documents() -> JSONResponse:
     """Return all persisted documents for the repository page."""
     return JSONResponse(
         status_code=200, content={"success": True, "documents": get_documents()}
+    )
+
+
+@router.get("/documents/{document_id}")
+def get_document_detail(document_id: int) -> JSONResponse:
+    """Return detailed document metadata and item rows for the requested document."""
+    document = get_document_with_items(document_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    return JSONResponse(
+        status_code=200,
+        content={"success": True, "document": document},
     )
 
 

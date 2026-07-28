@@ -17,7 +17,7 @@ class OCRResponse(BaseModel):
     """Structured OCR extraction payload returned to the frontend."""
 
     vendor: str = Field(default="")
-    invoice_number: str = Field(default="")
+    invoice_number: str = Field(default="", alias="no_invoice")
     invoice_date: str = Field(default="")
     activity_name: str = Field(default="")
     division: str = Field(default="")
@@ -26,6 +26,10 @@ class OCRResponse(BaseModel):
     description: str = Field(default="")
     grand_total: float = Field(default=0.0)
     items: list[OCRItem] = Field(default_factory=list)
+
+    model_config = {
+        "populate_by_name": True,
+    }
 
 
 class SaveDocumentPayload(OCRResponse):
